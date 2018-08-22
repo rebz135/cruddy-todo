@@ -8,9 +8,20 @@ var items = {};
 // Public API - Fix these CRUD functions ///////////////////////////////////////
 
 exports.create = (text, callback) => {
-  var id = counter.getNextUniqueId();
-  items[id] = text;
-  callback(null, {id: id, text: text});
+  counter.getNextUniqueId((err, data) => {
+    if (err) {
+      //TODO;
+    } else {
+      fs.writeFile(`test/testData/${data}.txt`, text, (err) => {
+        if (err) {
+          throw ('error writing counter');
+        } else {
+          callback(null, {id: data, text: text});
+        }
+      })
+      
+    }
+  })
 };
 
 exports.readOne = (id, callback) => {
@@ -24,10 +35,21 @@ exports.readOne = (id, callback) => {
 
 exports.readAll = (callback) => {
   var data = [];
-  _.each(items, (item, idx) => {
-    data.push({ id: idx, text: items[idx] });
-  });
+  var fileNames = fs.readdirSync(`test/testData/`);
+  fileNames.forEach((ele)=> {
+    // let text = fs.readFileSync(`test/testData/${ele}`) //TEXT IS IN BUFFER RIGHT NOW
+    let id = ele.split('.')[0]
+    data.push({ id: id, text: id })
+  })
   callback(null, data);
+  
+  
+  
+  // var data = [];
+  // _.each(items, (item, idx) => {
+  //   data.push({ id: idx, text: items[idx] });
+  // });
+  // callback(null, data);
 };
 
 exports.update = (id, text, callback) => {
