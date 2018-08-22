@@ -25,12 +25,20 @@ exports.create = (text, callback) => {
 };
 
 exports.readOne = (id, callback) => {
-  var item = items[id];
-  if (!item) {
+  var exist = fs.existsSync(`test/testData/${id}.txt`)
+  if (!exist) {
     callback(new Error(`No item with id: ${id}`));
   } else {
+    var item = fs.readFileSync(`test/testData/${id}.txt`).toString('utf8');
     callback(null, {id: id, text: item});
   }
+  
+  // var item = items[id];
+  // if (!item) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   callback(null, {id: id, text: item});
+  // }
 };
 
 exports.readAll = (callback) => {
@@ -44,7 +52,6 @@ exports.readAll = (callback) => {
   callback(null, data);
   
   
-  
   // var data = [];
   // _.each(items, (item, idx) => {
   //   data.push({ id: idx, text: items[idx] });
@@ -53,24 +60,53 @@ exports.readAll = (callback) => {
 };
 
 exports.update = (id, text, callback) => {
-  var item = items[id];
-  if (!item) {
+  var exist = fs.existsSync(`test/testData/${id}.txt`)
+  if (!exist) {
     callback(new Error(`No item with id: ${id}`));
   } else {
-    items[id] = text;
-    callback(null, {id: id, text: text});
-  }
+    fs.writeFile(`test/testData/${id}.txt`, text, (err) => {
+        if (err) {
+          //TODO
+        } else {
+          callback(null, {id: id, text: text});
+        }
+      });
+  }  
+  
+  // var item = items[id];
+  // if (!item) {
+  //   callback(new Error(`No item with id: ${id}`));
+  // } else {
+  //   items[id] = text;
+  //   callback(null, {id: id, text: text});
+  // }
 };
 
 exports.delete = (id, callback) => {
-  var item = items[id];
-  delete items[id];
-  if(!item) {
-    // report an error if item not found
-    callback(new Error(`No item with id: ${id}`))
+  var exist = fs.existsSync(`test/testData/${id}.txt`)
+  if (!exist) {
+    callback(new Error(`No item with id: ${id}`));
   } else {
-    callback();
+    fs.unlink(`test/testData/${id}.txt`, (err) => {
+       if (err) {
+          //TODO
+        } else {
+          callback(null, 'hi');
+        }
+    })
   }
+  
+  
+  
+  
+  // var item = items[id];
+  // delete items[id];
+  // if(!item) {
+  //   // report an error if item not found
+  //   callback(new Error(`No item with id: ${id}`))
+  // } else {
+  //   callback();
+  // }
 };
 
 // Config+Initialization code -- DO NOT MODIFY /////////////////////////////////
