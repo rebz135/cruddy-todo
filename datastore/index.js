@@ -10,11 +10,11 @@ var items = {};
 exports.create = (text, callback) => {
   counter.getNextUniqueId((err, data) => {
     if (err) {
-      //TODO;
+      callback(err);
     } else {
       fs.writeFile(`test/testData/${data}.txt`, text, (err) => {
         if (err) {
-          throw ('error writing counter');
+          callback(err);
         } else {
           callback(null, {id: data, text: text});
         }
@@ -45,9 +45,9 @@ exports.readAll = (callback) => {
   var data = [];
   var fileNames = fs.readdirSync(`test/testData/`);
   fileNames.forEach((ele)=> {
-    // let text = fs.readFileSync(`test/testData/${ele}`) //TEXT IS IN BUFFER RIGHT NOW
+    let text = fs.readFileSync(`test/testData/${ele}`).toString('utf8') //TEXT IS IN BUFFER RIGHT NOW
     let id = ele.split('.')[0]
-    data.push({ id: id, text: id })
+    data.push({ id: id, text: text })
   })
   callback(null, data);
   
@@ -65,12 +65,12 @@ exports.update = (id, text, callback) => {
     callback(new Error(`No item with id: ${id}`));
   } else {
     fs.writeFile(`test/testData/${id}.txt`, text, (err) => {
-        if (err) {
-          //TODO
-        } else {
-          callback(null, {id: id, text: text});
-        }
-      });
+      if (err) {
+        callback(err);
+      } else {
+        callback(null, {id: id, text: text});
+      }
+    });
   }  
   
   // var item = items[id];
@@ -89,7 +89,7 @@ exports.delete = (id, callback) => {
   } else {
     fs.unlink(`test/testData/${id}.txt`, (err) => {
        if (err) {
-          //TODO
+          callback(err);
         } else {
           callback(null, 'hi');
         }
