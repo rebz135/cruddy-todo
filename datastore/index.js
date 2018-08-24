@@ -4,6 +4,8 @@ const _ = require('underscore');
 const counter = require('./counter');
 const Promise = require('bluebird');
 
+const readFilePromise = Promise.promisify(fs.readFile);
+
 var items = {};
 
 // Public API - Fix these CRUD functions ///////////////////////////////////////
@@ -36,84 +38,28 @@ exports.readOne = (id, callback) => {
   });
 };
   
-  
-  
-  
-  
-  // var exist = fs.existsSync(`test/testData/${id}.txt`);
-  // if (!exist) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-    
-
-  //   var item = fs.readFileSync(`test/testData/${id}.txt`).toString('utf8');
-  //   callback(null, {id: id, text: item});
-  // }
-  
-  
-  
-  // var item = items[id];
-  // if (!item) {
-  //   callback(new Error(`No item with id: ${id}`));
-  // } else {
-  //   callback(null, {id: id, text: item});
-  // }
-// };
 
 exports.readAll = (callback) => {
-  // var data = [];
-  // var fileNames = fs.readdirSync(`test/testData/`);
-  // fileNames.forEach((ele)=> {
-  //   let text = fs.readFileSync(`test/testData/${ele}`).toString('utf8') //TEXT IS IN BUFFER RIGHT NOW
-  //   let id = ele.split('.')[0];
-  //   data.push({ id: id, text: text });
-  // });
-  // callback(null, data);
   
-  var readDirAsync = () => {
-    return new Promise( (resolve, reject) => {
-      fs.readdir('test/testData/', (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(data);
-        }
+  fs.readdir('test/testData/', (err, dir) => {
+    if (err) {
+      callback(err);
+    } else {
+      let arr = dir.map((file) => {
+        return readFilePromise(`test/testData/${file}`)
+          .then((content) => {
+            var id = file.split('.')[0];
+            var text = content.toString('utf8');
+            return {id: id, text: text};
+          });
       });
-    });
-  };
-    
-  var pushFileAsync = (directory) => {
-    let dataArray = [];
-    
-    var promises = directory.forEach((ele) => {
-      fs.readFile(`test/testData/${ele}`, (err, data) => {
-        if (err) { 
-          reject(err);
-        } else {
-          var id = ele.split('.')[0];
-          var text = data.toString('utf8');
-          dataArray.push({id: id, text: text})
-          console.log(dataArray);
-        }
-      })
       
-      var prom = Promise.all(dataArray).then((dataArray) => {console.log(dataArray)} )
-      return Promise.all(dataArray)
-    }) 
-  }
-  
-  return readDirAsync()
-    .then((directory) => {return pushFileAsync(directory)})
-    
-    // directory.forEach((ele) => {
-    //     fs.readFile(`test/testData/${ele}`, (err, data) => {
-    //       if (err) { 
-    //         reject(err);
-    //       } else {
-    //         var id = ele.split('.')[0];
-    //         var text = data.toString('utf8');
-    //   console.log('RETURN DATA', dataArray);
-    //   return callback(null, dataArray);});
+      Promise.all(arr).then((arr) => {
+        console.log(arr);
+        return callback(null, arr);
+      });
+    }
+  });
 };
 
 
